@@ -3,7 +3,7 @@ import { fetchJSON } from "./functions/api.js";
 try {
   const todos = await fetchJSON('https://jmmmsonplaceholder.typicode.com/todos?_limit=5')
   const list = new TodoList(todos)
-  list.aapendTo(documents.querySelector('#todolist'))
+  list.apendTo(documents.querySelector('#todolist'))
 
 
 } catch (e) {
