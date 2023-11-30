@@ -13,4 +13,5 @@ try {
   })
   divAlert.innerText = 'Impossible de charger les éléments'
   document.body.prepend(divAlert) // prepend inverse de append
+  console.error(e)
 }

@@ -12,6 +12,9 @@ export class TodoList {
   /** @type {Todo[]} */
   #todos = []
 
+  /** @type {HTMLUListElement} */
+  #listElement = []
+
 
   /** @param {Todo[]} */
 
@@ -34,27 +37,31 @@ export class TodoList {
     <div class="container">
       <div class="todolistItem">
         <div class="d-grid gap-2 d-md-block"></div>
-        <button type="button" class="btn btn-outline-primary">Toutes</button>
-        <button type="button" class="btn btn-outline-primary">A faire</button>
-        <button type="button" class="btn btn-outline-primary">Faites</button>
+        <button type="button" class="btn btn-outline-primary active" data-filter="all">Toutes</button>
+        <button type="button" class="btn btn-outline-primary" data-filter="todo">A faire</button>
+        <button type="button" class="btn btn-outline-primary" data-filter="done">Faites</button>
       </div>
     </div>
 
     <ul class="list-group"></ul>
   </main>`
-    const list = element.querySelector('.list-group')
+    this.#listElement = element.querySelector('.list-group')
     for (let todo of this.#todos) {
       const t = new TodoListItem(todo)
-      t.appendTo(list)
+      this.#listElement.append(t.element)
     }
-    element.querySelector('form').addEventListener('submit', e => this.onSubmit(e))
+    element.querySelector('form').addEventListener('submit', e => this.#onSubmit(e))
+    element.querySelectorAll('.btn-group button').for(button => {
+      button.addEventListener('click', e => this.#toggleFilter(e))
+    })
   }
   /**
    * @param {SubmitEvent} e
    */
 
-  onSubmit(e) {
+  #onSubmit(e) {
     e.preventDefault()
+    const form = e.currentTarget
     const title = new FormData(e.currentTarget).get('title').toString().trim()
     console.log(title)
     if (title === '') {
@@ -66,8 +73,31 @@ export class TodoList {
       completed: false
     }
     const item = new TodoListItem(todo)
-    item.appendTo
+    this.#listElement.prepend(item.element)
+    form.reset()
   }
+
+  /**
+ * @param {PointerEvent} e
+ */
+  #toggleFilter(e) { // mettre un # devant une fonction signifie qu'on la déclare en privé ?
+    e.preventDefault()
+    const filter = e.currentTarget.getAttribute('data-filter')
+    e.currentTarget.parentElement.querySelector('active').classList.remove('active')
+    e.currentTarget.classList.add('active')
+    console.log(filter);
+    if (filter === 'todo') {
+      this.#listElement.classList.add('hide-completed')
+      this.#listElement.classList.remove('hide-todo')
+    } else if (filter === 'done') {
+      this.#listElement.classList.add('hide-todo')
+      this.#listElement.classList.remove('hide-completed')
+    } else {
+      this.#listElement.classList.remove('hide-todo')
+      this.#listElement.classList.remove('hide-completed')
+    }
+  }
+
 }
 
 class TodoListItem {
@@ -81,6 +111,7 @@ class TodoListItem {
     const li = createElement('li', {
       class: 'todo list-group-item d-flex align-items-center'
     })
+    this.#element = li
     const checkbox = createElement('input', {
       type: 'checkbox',
       class: 'form-check-input',
@@ -100,17 +131,19 @@ class TodoListItem {
     li.append(checkbox)
     li.append(label)
     li.append(button)
+    this.toggle(checkbox)
 
     button.addEventListener('click', e => this.remove(e))
+    checkbox.addEventListener('change', e => this.toggle(e.currentTarget))
 
-    this.#element = li
+
   }
 
   /**
-   * @param {HTMLElement} element 
+   * @return {HTMLElement} 
   */
-  appendTo(element) {
-    element.append(this.#element)
+  get element() {
+    return this.#element
   }
 
   /**
@@ -120,4 +153,18 @@ class TodoListItem {
     e.preventDefault()
     this.#element.remove()
   }
+
+
+  /**
+   * change l'état (à faire / fait) de la tâche
+   * @param {HTMLInputElement} checkbox
+   */
+  toggle(checkbox) {
+    if (checkbox.checked) {
+      this.#element.classList.add('is-completed')
+    } else {
+      this.#element.classList.remove('is-completed')
+    }
+  }
+
 }
